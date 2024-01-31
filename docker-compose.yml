@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./api:/go/src/github.com/LiveSchedule-v2
+    ports:
+      - 8000:8000
     tty: true
     environment:
       - TZ=Asia/Tokyo
