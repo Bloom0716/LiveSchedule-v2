@@ -21,6 +21,7 @@ services:
     volumes:
       - db-store:/var/lib/postgresql/data
     environment:
+      - POSTGRES_DB=${DB_DATABASE}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
