@@ -12,3 +12,20 @@ services:
     tty: true
     environment:
       - TZ=Asia/Tokyo
+  
+  db:
+    container_name: ${DB_HOST}
+    build:
+      context: ./build/db
+      dockerfile: Dockerfile
+    volumes:
+      - db-store:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432
+
+volumes:
+  db-store:
