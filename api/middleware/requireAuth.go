@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -24,13 +23,19 @@ func RequireAuth(c *gin.Context) {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "",
+		})
+		return
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		// Check the exp
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "",
+			})
+			return
 		}
 
 		// Find the user with token sub
@@ -38,13 +43,19 @@ func RequireAuth(c *gin.Context) {
 		initializers.DB.First(&user, claims["sub"])
 
 		if user.ID == 0 {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "",
+			})
+			return
 		}
 
-		c.Set("User", user)
+		c.Set("user", user)
 
 	} else {
-		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "",
+		})
+		return
 	}
 
 	// Continue
