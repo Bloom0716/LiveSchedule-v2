@@ -24,7 +24,7 @@ func RequireAuth(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "",
+			"error": "Require ot invalid token",
 		})
 		return
 	}
@@ -33,7 +33,7 @@ func RequireAuth(c *gin.Context) {
 		// Check the exp
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "",
+				"error": "This token is expired",
 			})
 			return
 		}
@@ -44,7 +44,7 @@ func RequireAuth(c *gin.Context) {
 
 		if user.ID == 0 {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "",
+				"error": "Invalid token",
 			})
 			return
 		}
@@ -53,7 +53,7 @@ func RequireAuth(c *gin.Context) {
 
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "",
+			"error": "Invalid token",
 		})
 		return
 	}
