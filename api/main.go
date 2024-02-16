@@ -16,6 +16,9 @@ func main() {
 	router := gin.Default()
 	router.POST("/signup", controllers.Signup)
 	router.POST("/login", controllers.Login)
+	router.GET("/user/:userId", controllers.GetUser)
+	router.PATCH("/user/:userId", controllers.UpdateUser)
+	router.DELETE("/delete/:userId", controllers.DeleteUser)
 
 	router.Run()
 }

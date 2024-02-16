@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetUser(c *gin.Context) {
+func DeleteUser(c *gin.Context) {
 	// Get the req
 	userId := c.Param("userId")
 
@@ -30,13 +30,11 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
+	// Delete user
+	initializers.DB.Delete(&user)
+
 	// Respond
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Successfully obtained user data",
-		"data": gin.H{
-			"userId": user.ID,
-			"name":   user.Name,
-			"email":  user.Email,
-		},
+		"message": "Successfully delete user",
 	})
 }
