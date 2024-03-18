@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/LiveSchedule-v2/controllers"
 	"github.com/LiveSchedule-v2/initializers"
+	"github.com/LiveSchedule-v2/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,11 +15,15 @@ func init() {
 
 func main() {
 	router := gin.Default()
-	router.POST("/signup", controllers.Signup)
-	router.POST("/login", controllers.Login)
-	router.GET("/user/:userId", controllers.GetUser)
-	router.PATCH("/user/:userId", controllers.UpdateUser)
-	router.DELETE("/delete/:userId", controllers.DeleteUser)
+
+	userRouter := router.Group("users")
+	{
+		userRouter.POST("signup", controllers.Signup)
+		userRouter.POST("login", controllers.Login)
+		userRouter.GET("/:userId", middleware.RequireAuth, controllers.GetUser)
+		userRouter.PATCH("/:userId", middleware.RequireAuth, controllers.UpdateUser)
+		userRouter.DELETE("/delete/:userId", middleware.RequireAuth, controllers.DeleteUser)
+	}
 
 	router.Run()
 }
