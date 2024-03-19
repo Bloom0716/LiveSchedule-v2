@@ -54,8 +54,6 @@ func RequireAuth(c *gin.Context) {
 			return
 		}
 
-		c.Set("user", user)
-
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid token",
