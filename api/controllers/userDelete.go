@@ -10,13 +10,10 @@ import (
 
 func DeleteUser(c *gin.Context) {
 	// Get the req
-	userId := c.Param("userId")
+	userId, err := c.Cookie("UserId")
 
-	if userId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read path param",
-		})
-		return
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 
 	// Look up requested user

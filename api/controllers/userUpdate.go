@@ -11,7 +11,12 @@ import (
 
 func UpdateUser(c *gin.Context) {
 	// Get the req
-	userId := c.Param("userId")
+	userId, err := c.Cookie("UserId")
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
+
 	DB := initializers.DB
 	var body struct {
 		Name     string `form:"name"`

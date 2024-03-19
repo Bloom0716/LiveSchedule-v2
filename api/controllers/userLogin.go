@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/LiveSchedule-v2/initializers"
@@ -66,6 +67,7 @@ func Login(c *gin.Context) {
 	// Respond
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
+	c.SetCookie("UserId", strconv.Itoa(int(user.ID)), 3600*24*30, "", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"userId":   user.ID,
