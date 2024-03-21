@@ -20,9 +20,22 @@ func main() {
 	{
 		userRouter.POST("signup", controllers.Signup)
 		userRouter.POST("login", controllers.Login)
-		userRouter.GET("/:userId", middleware.RequireAuth, controllers.GetUser)
-		userRouter.PATCH("/:userId", middleware.RequireAuth, controllers.UpdateUser)
-		userRouter.DELETE("/delete/:userId", middleware.RequireAuth, controllers.DeleteUser)
+		userRouter.GET("user", middleware.RequireAuth, controllers.GetUser)
+		userRouter.PATCH("user", middleware.RequireAuth, controllers.UpdateUser)
+		userRouter.DELETE("delete", middleware.RequireAuth, controllers.DeleteUser)
+	}
+
+	channelRouter := router.Group("channels")
+	{
+		channelRouter.GET("search", controllers.SearchChannel)
+		channelRouter.GET("channel", controllers.GetChannel)
+		channelRouter.POST("register", controllers.RegisterChannel)
+		channelRouter.DELETE("delete", controllers.DeleteChannel)
+	}
+
+	videoRouter := router.Group("videos")
+	{
+		videoRouter.GET("search", controllers.SearchVideo)
 	}
 
 	router.Run()
