@@ -4,6 +4,7 @@ import (
 	"github.com/LiveSchedule-v2/controllers"
 	"github.com/LiveSchedule-v2/initializers"
 	"github.com/LiveSchedule-v2/middleware"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,6 +38,12 @@ func main() {
 	{
 		videoRouter.GET("search", controllers.SearchVideo)
 	}
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type"},
+	}))
 
 	router.Run()
 }
