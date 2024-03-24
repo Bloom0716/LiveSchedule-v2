@@ -13,6 +13,17 @@ services:
     environment:
       - TZ=Asia/Tokyo
   
+  discord-api:
+    container_name: discord-api
+    build:
+      context: ./discord-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./discord-api:/usr/src/api
+    ports:
+      - 8081:8081
+    tty: true
+  
   db:
     container_name: ${DB_HOST}
     build:
