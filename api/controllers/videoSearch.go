@@ -3,16 +3,21 @@ package controllers
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/LiveSchedule-v2/initializers"
+	"github.com/LiveSchedule-v2/models"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/youtube/v3"
 )
 
 func SearchVideo(c *gin.Context) {
-	// Get API key
+	// Get API key and userId
 	apiKey := os.Getenv("API_KEY")
+	userIdStr := c.Query("userId")
+	userId, _ := strconv.Atoi(userIdStr)
 
 	// YouTube Data API
 	client := &http.Client{
@@ -27,67 +32,67 @@ func SearchVideo(c *gin.Context) {
 		return
 	}
 
-	// Get upcoming videos
-	channelId := c.Query("channelId")
-	if channelId == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Missing 'channelId' parameter",
-		})
-		return
-	}
+	// Get channelId
+	channels := []models.Channel{}
+	initializers.DB.Where("user_id = ?", userId).Find(&channels)
 
-	// now := time.Now().Format(time.RFC3339)
-	searchCall := service.Search.List([]string{"snippet"}).
-		ChannelId(channelId).
-		EventType("upcoming").
-		Type("video").
-		MaxResults(1).
-		Order("date")
-
-	response, err := searchCall.Do()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to fetch videos",
-		})
-		return
-	}
-
+	// Get videos
 	videos := []gin.H{}
-	for _, item := range response.Items {
-		video := gin.H{
-			"title":              item.Snippet.Title,
-			"videoId":            item.Id.VideoId,
-			"thumbnail":          item.Snippet.Thumbnails.Default.Url,
-			"scheduledStartTime": "",
+	for _, channel := range channels {
+		channelId := channel.ChannelId
+
+		searchCall := service.Search.List([]string{"snippet"}).
+			ChannelId(channelId).
+			EventType("upcoming").
+			Type("video").
+			MaxResults(1).
+			Order("date")
+
+		response, err := searchCall.Do()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to fetch videos",
+			})
+			return
 		}
 
-		if item.Snippet.LiveBroadcastContent == "upcoming" {
-			videoDetails, err := service.Videos.List([]string{"liveStreamingDetails"}).Id(item.Id.VideoId).Do()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "Failed to retrieve video details: " + err.Error(),
-				})
-				return
+		for _, item := range response.Items {
+			video := gin.H{
+				"channelTitle":       channel.ChannelTitle,
+				"channelId":          channelId,
+				"title":              item.Snippet.Title,
+				"videoId":            item.Id.VideoId,
+				"thumbnail":          item.Snippet.Thumbnails.Default.Url,
+				"scheduledStartTime": "",
 			}
 
-			if len(videoDetails.Items) == 0 {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "There are no video data",
-				})
-				return
-			}
+			if item.Snippet.LiveBroadcastContent == "upcoming" {
+				videoDetails, err := service.Videos.List([]string{"liveStreamingDetails"}).Id(item.Id.VideoId).Do()
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Failed to retrieve video details: " + err.Error(),
+					})
+					return
+				}
 
-			scheduledStartTime, err := time.Parse(time.RFC3339, videoDetails.Items[0].LiveStreamingDetails.ScheduledStartTime)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "Failed to parse scheduled start time: " + err.Error(),
-				})
-				return
+				if len(videoDetails.Items) == 0 {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": "There are no video data",
+					})
+					return
+				}
+
+				scheduledStartTime, err := time.Parse(time.RFC3339, videoDetails.Items[0].LiveStreamingDetails.ScheduledStartTime)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Failed to parse scheduled start time: " + err.Error(),
+					})
+					return
+				}
+				video["scheduledStartTime"] = scheduledStartTime.Format(time.RFC3339)
 			}
-			video["scheduledStartTime"] = scheduledStartTime.Format(time.RFC3339)
+			videos = append(videos, video)
 		}
-
-		videos = append(videos, video)
 	}
 
 	// Respond
