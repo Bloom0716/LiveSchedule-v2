@@ -39,6 +39,13 @@ func main() {
 		videoRouter.GET("search", controllers.SearchVideo)
 	}
 
+	discordRouter := router.Group("discord")
+	{
+		discordRouter.POST("login", controllers.LoginDiscordUser)
+		discordRouter.GET("search", controllers.GetDiscordVideo)
+		discordRouter.DELETE("delete", controllers.DeleteDiscordUser)
+	}
+
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
