@@ -1,11 +1,13 @@
 import requests
-from fastapi import FastAPI
+
+from discordbot import bot
+import config
 
 
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def main() -> None:
+    TOKEN = config.DISCORD_TOKEN
+    bot.run(TOKEN)
 
 
+if __name__ == "__main__":
+    main()
