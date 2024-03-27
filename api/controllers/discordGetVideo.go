@@ -13,11 +13,22 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
-func SearchVideo(c *gin.Context) {
-	// Get API key and userId
+func GetDiscordVideo(c *gin.Context) {
+	// Get apiKey and discordId
 	apiKey := os.Getenv("API_KEY")
-	userIdStr := c.Query("userId")
-	userId, _ := strconv.Atoi(userIdStr)
+	discordIdStr := c.Query("discordId")
+	discordId, _ := strconv.Atoi(discordIdStr)
+
+	// Look up requested DiscordUser
+	discordUser := models.DiscordUser{}
+	initializers.DB.First(&discordUser, "discord_id = ?", discordId)
+
+	if discordUser.ID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid discordUser",
+		})
+		return
+	}
 
 	// YouTube Data API
 	client := &http.Client{
@@ -34,7 +45,7 @@ func SearchVideo(c *gin.Context) {
 
 	// Get channelId
 	channels := []models.Channel{}
-	initializers.DB.Where("user_id = ?", userId).Find(&channels)
+	initializers.DB.Where("user_id = ?", discordUser.UserId).Find(&channels)
 
 	// Get videos
 	videos := []gin.H{}
