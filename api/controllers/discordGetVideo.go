@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/LiveSchedule-v2/initializers"
@@ -16,16 +15,15 @@ import (
 func GetDiscordVideo(c *gin.Context) {
 	// Get apiKey and discordId
 	apiKey := os.Getenv("API_KEY")
-	discordIdStr := c.Query("discordId")
-	discordId, _ := strconv.Atoi(discordIdStr)
+	discordId := c.Query("discordId")
 
 	// Look up requested DiscordUser
-	discordUser := models.DiscordUser{}
-	initializers.DB.First(&discordUser, "discord_id = ?", discordId)
+	user := models.User{}
+	initializers.DB.First(&user, "discord_id = ?", discordId)
 
-	if discordUser.ID == 0 {
+	if user.ID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid discordUser",
+			"error": "Invalid User",
 		})
 		return
 	}
@@ -45,7 +43,7 @@ func GetDiscordVideo(c *gin.Context) {
 
 	// Get channelId
 	channels := []models.Channel{}
-	initializers.DB.Where("user_id = ?", discordUser.UserId).Find(&channels)
+	initializers.DB.Where("user_id = ?", user.ID).Find(&channels)
 
 	// Get videos
 	videos := []gin.H{}
