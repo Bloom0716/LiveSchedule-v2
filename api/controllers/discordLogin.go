@@ -9,12 +9,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginDiscordUser(c *gin.Context) {
+func LoginDiscord(c *gin.Context) {
 	// Get the req
 	var body struct {
 		Email     string
 		Password  string
-		DiscordId int `json:"discord_id"`
+		DiscordId string `form:"discord_id" json:"discord_id"`
 	}
 
 	if c.Bind(&body) != nil {
@@ -24,7 +24,7 @@ func LoginDiscordUser(c *gin.Context) {
 		return
 	}
 
-	// Look up user
+	// Look up requested user
 	user := models.User{}
 	initializers.DB.First(&user, "email = ?", body.Email)
 
@@ -39,31 +39,17 @@ func LoginDiscordUser(c *gin.Context) {
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid password",
 		})
 		return
 	}
 
-	// Create DiscordUser
-	discordUser := models.DiscordUser{
-		UserId:    user.ID,
-		DiscordId: body.DiscordId,
-		Name:      user.Name,
-		Email:     user.Email,
-		Password:  user.Password,
-	}
-	result := initializers.DB.Create(&discordUser)
-
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to create DiscordUser",
-		})
-		return
-	}
+	// Save discordId
+	initializers.DB.Model(&user).Update("discord_id", body.DiscordId)
 
 	// Respond
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Create DiscordUser",
+		"message": "Successfully register discord_id",
 	})
 }
