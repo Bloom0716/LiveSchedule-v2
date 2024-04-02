@@ -41,10 +41,8 @@ func main() {
 
 	discordRouter := router.Group("discord")
 	{
-		// discordRouter.POST("login", controllers.LoginDiscordUser)
+		discordRouter.POST("login", controllers.LoginDiscord)
 		discordRouter.GET("search", controllers.GetDiscordVideo)
-		// discordRouter.DELETE("delete", controllers.DeleteDiscordUser)
-		discordRouter.PATCH("register", controllers.RegisterDiscordId)
 	}
 
 	router.Use(cors.New(cors.Config{
